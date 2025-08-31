@@ -1,0 +1,49 @@
+# Environments
+.env
+.env.*
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Reports & Logs
+reports/
+*.log
+
+# IDE
+.vscode/
+.idea/
+
+# Model directories (excluded due to large size)
+llama.cpp/
+models_gguf_single/
+models_gguf/
+models/
+
+# Cache directories
+.cache/
+.gradio/
+__pycache__/
+
+# Embedded git repositories
+scripts/Qwen-Agent TCM/
+
+# Large data files (exceed GitHub's 100MB limit)
+processed_data/final_unified_dataset.json
+processed_data/PACS影像数据 去身份证.json
+processed_data/microbio_pivot.csv
+processed_data/unified_dataset.json
+processed_data/LIS 去除身份证.json
+
+# Large data files (exceed GitHub's 50MB limit)
+*.json
+*.csv
+*.parquet
+*.tsd
+
+
+
+
