@@ -1,0 +1,69 @@
+experiment:
+  name: "arima_hk_hfmd"
+  description: "ARIMA baseline for HK HFMD"
+  tags: ["baseline", "statistical", "hfmd", "hk"]
+  random_seed: 42
+
+data:
+  source: "experiments/data_for_model/手足口病/data_HK/hk_hfmd_baseline_ready.csv"
+  disease: "value"
+  train_start: "2010-01-02"
+  train_end: "2022-12-31"
+  test_start: "2023-01-07"
+  test_end: "2024-10-31"
+  validation_split: 0.2
+  rolling:
+    enabled: true
+    step_size: 1
+    min_train_weeks: 52
+    forecast_start: "2023-01-07"
+    forecast_end: "2024-10-31"
+  external_signals:
+    enabled: false
+
+model:
+  type: "arima"
+  params:
+    order: [2, 1, 2]
+    seasonal_order: [1, 0, 1, 52]
+    enforce_stationarity: false
+    enforce_invertibility: false
+  forecast:
+    horizon: 1
+    quantiles: [0.025, 0.05, 0.1, 0.5, 0.9, 0.95, 0.975]
+
+evaluation:
+  metrics:
+    - "crps"
+    - "mae"
+    - "rmse"
+    - "coverage_95"
+    - "coverage_80"
+    - "peak_recall_2w"
+    - "peak_mae"
+  statistical_test:
+    enabled: true
+    method: "paired_t_test"
+    alpha: 0.05
+
+logging:
+  level: "INFO"
+  console: true
+  file: true
+  checkpoint:
+    enabled: true
+    frequency: 12
+  visualization:
+    enabled: true
+    save_plots: true
+    plot_types:
+      - "prediction_vs_actual"
+      - "residuals"
+      - "diagnostics_acf"
+      - "rolling_metrics"
+
+resources:
+  n_jobs: 1
+  gpu: false
+  memory_limit: "12GB"
+  timeout: 5400

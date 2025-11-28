@@ -1,0 +1,50 @@
+experiment:
+  name: "moirai_hk_hfmd"
+  description: "Moirai baseline for HK HFMD"
+  tags: ["moirai", "foundation_model", "hfmd", "hk"]
+  random_seed: 42
+
+data:
+  source: "experiments/data_for_model/手足口病/data_HK/hk_hfmd_baseline_ready.csv"
+  disease: "value"
+  train_start: "2010-01-02"
+  train_end: "2022-12-31"
+  test_start: "2023-01-07"
+  test_end: "2024-10-31"
+  rolling:
+    enabled: true
+    step_size: 1
+    min_train_weeks: 52
+    forecast_start: "2023-01-07"
+    forecast_end: "2024-10-31"
+
+model:
+  type: "moirai"
+  repo_id: "Salesforce/moirai-1.0-R-small"
+  context_len: 512
+  quantiles: [0.025, 0.05, 0.1, 0.5, 0.9, 0.95, 0.975]
+  num_samples: 100
+  patch_size: "auto"
+  batch_size: 32
+  device: "cuda"
+  forecast:
+    horizon: 1
+
+evaluation:
+  metrics:
+    - "crps"
+    - "mae"
+    - "mape"
+    - "sharpness"
+    - "coverage_90"
+    - "coverage_95"
+
+logging:
+  level: "INFO"
+  console: true
+  file: true
+
+resources:
+  n_jobs: 2
+  gpu: true
+  memory_limit: "24GB"

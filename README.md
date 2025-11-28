@@ -1,60 +1,256 @@
-# Project: Medical AI Data Preprocessing and Fine-Tuning Preparation
+# Beyond Curve Fitting: Neuro-Symbolic Agents for Context-Aware Epidemic Forecasting
 
-This project processes and prepares a diverse set of raw medical data for the purpose of fine-tuning a large language model (Qwen3). The pipeline involves several stages of data cleaning, structuring, feature engineering, visualization, and preparation for both LoRA (SFT) and RLVR training.
+[![Paper](https://img.shields.io/badge/Paper-arXiv-red)](https://arxiv.org/abs/xxxx.xxxxx)
+[![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-## Directory Structure
+This repository contains the code for the paper on LLM-based epidemic forecasting. The framework combines Large Language Models with epidemiological context to predict disease case counts.
+
+![Figure 1](figure/figure1.png)
+
+## 📁 Project Structure
 
 ```
-/home/joongwon00/Project_Tsinghua_Paper/med_deepseek/
-├── data/                  # Raw, original data files (.xlsx, .pdf)
-├── idea/                  # Markdown files detailing the processing strategy for each data source.
-├── processed_data/        # All generated data files.
-│   ├── final_unified_dataset.json  # The main, cleaned, and structured dataset.
-│   ├── lora_tuning_dataset.jsonl   # Dataset formatted for LoRA fine-tuning.
-│   └── rlvr_preference_dataset.jsonl # Dataset formatted for RLVR.
+forecast_MED/
+├── experiments/
+│   ├── core/                      # Core forecasting modules
+│   │   ├── rolling_agent_forecast.py   # Main rolling forecast pipeline
+│   │   ├── simple_event_interpreter.py # Model 1: Event Interpreter
+│   │   ├── simple_forecast_generator.py # Model 2: Forecast Generator
+│   │   └── llm_agent.py           # LLM API wrapper (OpenAI, DashScope, DeepSeek)
+│   ├── configs/
+│   │   └── baselines/             # Baseline model configurations
+│   │       ├── hk_hfmd/           # Hong Kong HFMD configs
+│   │       └── hz_hfmd/           # Li Shui HFMD configs
+│   ├── models/                    # Baseline model implementations
+│   │   ├── arima_model.py
+│   │   ├── prophet_model.py
+│   │   ├── lstm_model.py
+│   │   ├── xgboost_model.py
+│   │   ├── chronos_model.py
+│   │   ├── moirai_model.py
+│   │   └── timesfm_model.py
+│   └── scripts/                   # Utility scripts
+├── figure/                        # Paper figures
 ├── scripts/
-│   └── preprocess/        # All Python scripts used in the pipeline.
-└── visualizations/        # All generated plots and charts.
-    └── advanced_diagnosis_distribution.png # Key visualization of disease distribution.
+│   └── generate_scientific_figures.py  # Figure generation script
+└── run_*.sh                       # Experiment runner scripts
 ```
 
-## Data Processing Pipeline
+## 🚀 Quick Start
 
-The process was executed through a series of scripts:
+### 1. Environment Setup
 
-1.  **Initial Exploration & Ideation:**
-    - The raw data files in the `data/` directory were analyzed.
-    - A detailed plan for handling each file was created and stored in the `idea/` directory. This involved identifying key columns, proposing feature engineering steps (like parsing dosage, creating clinical narratives), and defining a target data structure.
+```bash
+# Create conda environment
+conda create -n epillm python=3.11
+conda activate epillm
 
-2.  **Intelligent Data Structuring (`07_build_final_dataset.py`):**
-    - This script implements the logic from the `idea/` plans.
-    - It reads the most critical raw data files (outpatient, imaging, and EMR).
-    - It extracts relevant information, combines text fields into narratives, and standardizes the data into a single, consistent schema.
-    - The output is `final_unified_dataset.json`, which serves as the master dataset for all subsequent steps.
+# Install dependencies
+pip install -r requirements.txt
 
-3.  **Advanced Visualization (`06_advanced_visualization.py`):**
-    - This script loads the final unified dataset.
-    - It generates a publication-quality bar chart (`advanced_diagnosis_distribution.png`) showing the distribution of primary diagnoses.
-    - **Crucially, it addresses the data imbalance issue** by grouping diagnoses that constitute less than 1% of the data into an "Other" category. This makes the visualization clean and interpretable, highlighting the most prevalent conditions.
-    - All plot labels are translated to English for clarity.
+# Set up API keys in .env file
+cp .env.example .env
+# Edit .env with your API keys
+```
 
-4.  **Preparation for Fine-Tuning (`05_prepare_for_tuning.py` - *Note: This would be the next logical step, using the `final_unified_dataset.json`*):**
-    - The previously generated script can now be adapted to use the clean, final dataset to create high-quality prompts and completions for LoRA and RLVR tuning.
+### 2. Data Preparation
 
-## Analysis and Potential Improvements
+Prepare your data in CSV format with the following columns:
+- `date`: Date in YYYY-MM-DD format
+- `cases`: Number of cases (weekly aggregated)
 
-### Data Quality and Imbalance
-- **Observation:** The analysis and visualization confirmed a significant imbalance in the distribution of diagnoses. A few common conditions make up a large portion of the dataset, while many others are rare.
-- **Impact:** If not handled properly, this imbalance would cause a fine-tuned model to be highly biased towards predicting only the most common diseases.
-- **Mitigation:**
-    - **In Visualization:** The issue was handled by grouping rare diseases, as described above.
-    - **For Model Training (Improvement):** The actual model training process must incorporate specific strategies to counteract this. Good options include:
-        - **Oversampling:** Using techniques like SMOTE (Synthetic Minority Over-sampling Technique) to create more examples of the rare diseases.
-        - **Undersampling:** Reducing the number of examples from the most common diseases.
-        - **Weighted Loss Functions:** Modifying the model's loss function to penalize errors on rare diseases more heavily.
+Optional weather data with columns: `date`, `temp_avg`, `temp_max`, `temp_min`, `humidity`, `precipitation`
 
-### Future Improvements
-1.  **Incorporate All Data Sources:** The current `final_unified_dataset.json` focuses on the most diagnosis-rich text sources. A future iteration should merge in the **lab data (`LIS`)** and the **inpatient medication data**. This would require creating a patient-centric view, linking all events (diagnoses, labs, meds) to a single patient ID and timeline.
-2.  **Advanced NLP Feature Extraction:** The narrative text fields (`clinical_narrative`, `findings_text`) are very rich. Advanced NLP techniques like **Named Entity Recognition (NER)** could be used to explicitly extract symptoms, medications, and anatomical locations, turning them into structured features.
-3.  **Refine RLVR Data Generation:** The current method for creating `rejected` pairs (sampling from other patients) is a good start. A more advanced approach would be to use an LLM to generate *subtly incorrect* responses (e.g., a diagnosis that is similar but less likely), which would provide a more challenging and effective training signal for the model.
-4.  **Build a RAG System:** The `Epidemic_guide.pdf` should be processed into a vector database to support a Retrieval-Augmented Generation pipeline, allowing the LLM to query this knowledge base before answering questions.
+### 3. Running LLM Experiments
+
+#### Li Shui Hospital Data
+```bash
+# OpenAI GPT-5.1
+python -m experiments.core.rolling_agent_forecast \
+  --disease 手足口病 \
+  --start 2024-02-01 \
+  --end 2024-09-30 \
+  --horizon 1 \
+  --model gpt-5.1 \
+  --provider openai \
+  --forecast_mode advanced \
+  --save_json \
+  --batch advanced_hangzhou_openai
+
+# Qwen3-235b-a22b
+python -m experiments.core.rolling_agent_forecast \
+  --disease 手足口病 \
+  --start 2024-02-01 \
+  --end 2024-09-30 \
+  --horizon 1 \
+  --model qwen3-235b-a22b \
+  --provider dashscope \
+  --forecast_mode advanced \
+  --save_json \
+  --batch advanced_hangzhou_qwen
+
+# DeepSeek Chat
+python -m experiments.core.rolling_agent_forecast \
+  --disease 手足口病 \
+  --start 2024-02-01 \
+  --end 2024-09-30 \
+  --horizon 1 \
+  --model deepseek-chat \
+  --provider deepseek \
+  --forecast_mode advanced \
+  --save_json \
+  --batch advanced_hangzhou_deepseek
+```
+
+#### Hong Kong Public Health Data
+```bash
+# OpenAI GPT-5.1 (Hong Kong)
+python -m experiments.core.rolling_agent_forecast \
+  --disease 手足口病 \
+  --csv_path path/to/your/data.csv \
+  --start 2023-01-01 \
+  --end 2024-10-31 \
+  --horizon 1 \
+  --model gpt-5.1 \
+  --provider openai \
+  --forecast_mode advanced \
+  --save_json \
+  --batch advanced_hongkong_openai
+```
+
+### 4. Running Baseline Models
+
+```bash
+# Run baseline with config file
+python -m experiments.run_experiment --config experiments/configs/baselines/hk_hfmd/arima.yaml --batch my_baseline
+python -m experiments.run_experiment --config experiments/configs/baselines/hk_hfmd/prophet.yaml --batch my_baseline
+python -m experiments.run_experiment --config experiments/configs/baselines/hk_hfmd/lstm.yaml --batch my_baseline
+python -m experiments.run_experiment --config experiments/configs/baselines/hk_hfmd/xgboost.yaml --batch my_baseline
+python -m experiments.run_experiment --config experiments/configs/baselines/hk_hfmd/chronos.yaml --batch my_baseline
+python -m experiments.run_experiment --config experiments/configs/baselines/hk_hfmd/moirai.yaml --batch my_baseline
+python -m experiments.run_experiment --config experiments/configs/baselines/hk_hfmd/timesfm.yaml --batch my_baseline
+```
+
+### 5. Generating Publication Figures
+
+```bash
+# Generate all scientific figures (600 DPI)
+python scripts/generate_scientific_figures.py
+```
+
+Output structure:
+- `*_forecast.png` - Prediction vs Actual with 90% PI
+- `*_residuals_overtime.png` - Residual time series
+- `*_residuals_distribution.png` - Residual distribution with μ, σ
+- `*_composite.png` - Combined A-B-C panel figure
+
+## 📊 Experiment Results
+
+### Hong Kong HFMD (2023-01 ~ 2024-10)
+
+| Model | MAE | CRPS | Coverage_90 |
+|-------|-----|------|-------------|
+| **OpenAI GPT-5.1** | **3.49** | 2.08 | 87.9% |
+| Qwen3-235b-a22b | 3.95 | 2.33 | 91.2% |
+| DeepSeek Chat | 4.32 | 2.40 | 90.1% |
+| Prophet | 3.49 | 2.31 | 40.0% |
+| XGBoost | 3.49 | 2.53 | 33.7% |
+| ARIMA | 3.51 | 2.54 | 32.6% |
+| LSTM | 3.53 | 1.79 | 73.7% |
+| TimesFM | 3.67 | 2.44 | 85.9% |
+| Chronos | 3.79 | 1.71 | 56.8% |
+| Moirai | 3.95 | 1.86 | 83.2% |
+
+### Li Shui Hospital HFMD (2024-02 ~ 2024-09)
+
+| Model | MAE | CRPS | Coverage_90 |
+|-------|-----|------|-------------|
+| **OpenAI GPT-5.1** | **4.42** | 2.53 | 84.8% |
+| Qwen3-235b-a22b | 4.73 | 2.55 | 90.9% |
+| DeepSeek Chat | 4.79 | 2.81 | 93.9% |
+
+## 🔧 Key Parameters
+
+### LLM Forecast Arguments
+
+| Parameter | Description | Default |
+|-----------|-------------|---------|
+| `--disease` | Disease name (手足口病, 扁桃体炎) | Required |
+| `--csv_path` | Custom data file path | Auto-detect |
+| `--start` | Forecast start date (YYYY-MM-DD) | Required |
+| `--end` | Forecast end date (YYYY-MM-DD) | Required |
+| `--horizon` | Forecast horizon in weeks | 1 |
+| `--model` | LLM model name | Required |
+| `--provider` | API provider (openai, dashscope, deepseek) | Required |
+| `--temperature` | LLM temperature | 0.2 |
+| `--forecast_mode` | Mode: 'advanced' (full pipeline) or 'baseline' | advanced |
+| `--skip_model1` | Skip Event Interpreter (Model 1) | False |
+| `--save_json` | Save detailed JSON logs | False |
+| `--batch` | Batch name for result directory | Required |
+
+### Baseline Config (YAML)
+
+```yaml
+data:
+  source: "path/to/data.csv"
+  train_start: "2010-01-02"
+  train_end: "2022-12-31"
+  test_start: "2023-01-07"
+  test_end: "2024-10-31"
+  rolling:
+    enabled: true
+    step_size: 1
+    forecast_start: "2023-01-07"
+    forecast_end: "2024-10-31"
+
+model:
+  type: "chronos"  # arima, prophet, lstm, xgboost, chronos, moirai, timesfm
+  forecast:
+    horizon: 1
+```
+
+## 📈 Metrics
+
+- **MAE**: Mean Absolute Error
+- **RMSE**: Root Mean Squared Error  
+- **CRPS**: Continuous Ranked Probability Score (probabilistic accuracy)
+- **Coverage_90**: Proportion of actuals within 90% prediction interval
+
+### CRPS Calculation
+
+For Negative Binomial distribution:
+```python
+# Variance: Var = μ + μ²/r (where r = dispersion parameter)
+std = np.sqrt(pred * (1 + pred / r_nb))
+crps = properscoring.crps_gaussian(actual, pred, std)
+```
+
+## 📂 Output Structure
+
+```
+experiments/results/{batch_name}/
+├── simplified______{start}_{end}_v1/
+│   ├── predictions.csv      # Predictions with quantiles
+│   ├── summary.json         # Metrics summary
+│   ├── args.json            # Experiment arguments
+│   └── plots/               # Auto-generated plots
+└── ...
+
+results_json/{batch_name}/
+└── {batch}_{model}_{start}_{end}_{timestamp}.json  # Detailed LLM traces
+```
+
+## 📚 Citation
+
+```bibtex
+@article{epilllm2025,
+  title={Beyond Curve Fitting: Neuro-Symbolic Agents for Context-Aware Epidemic Forecasting},
+  author={...},
+  journal={...},
+  year={2025}
+}
+```
+
+## 📝 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.

@@ -1,0 +1,44 @@
+batch:
+  name: "baseline_bundle"
+  default_batch_name: "baseline_bundle"
+  summary_dir: "experiments/results/batch_runs"
+  stop_on_error: false
+
+global_overrides:
+  # 공통 override 예시 (필요 없으면 비워두세요)
+  - "logging.console=true"
+
+experiments:
+  - name: "prophet_baseline"
+    config: "../baselines/prophet.yaml"
+    n_runs: 1
+    seeds: [42]
+
+  - name: "seir_baseline"
+    config: "../main/seir_baseline.yaml"
+    n_runs: 1
+    overrides:
+      - "model.params.population=1200000"
+
+  - name: "xgboost_baseline"
+    config: "../baselines/xgboost.yaml"
+    n_runs: 1
+    enabled: true
+
+  - name: "arima_baseline"
+    config: "../baselines/arima.yaml"
+    n_runs: 1
+
+  - name: "lstm_baseline"
+    config: "../baselines/lstm.yaml"
+    n_runs: 1
+
+  - name: "chronos_baseline"
+    config: "../main/chronos_baseline.yaml"
+    n_runs: 1
+    enabled: false
+
+  - name: "timesfm_baseline"
+    config: "../main/timesfm_baseline.yaml"
+    n_runs: 1
+

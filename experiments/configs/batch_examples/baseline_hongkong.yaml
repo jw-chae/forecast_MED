@@ -1,0 +1,37 @@
+batch:
+  name: "baseline_hongkong"
+  default_batch_name: "baseline_hongkong"
+  summary_dir: "experiments/results/batch_runs"
+  stop_on_error: false
+
+global_overrides:
+  - "logging.console=true"
+
+experiments:
+  - name: "arima_hk_hfmd"
+    config: "../baselines/hk_hfmd/arima.yaml"
+    n_runs: 1
+
+  - name: "prophet_hk_hfmd"
+    config: "../baselines/hk_hfmd/prophet.yaml"
+    n_runs: 1
+
+  - name: "lstm_hk_hfmd"
+    config: "../baselines/hk_hfmd/lstm.yaml"
+    n_runs: 1
+
+  - name: "xgboost_hk_hfmd"
+    config: "../baselines/hk_hfmd/xgboost.yaml"
+    n_runs: 1
+
+  - name: "chronos_hk_hfmd"
+    config: "../baselines/hk_hfmd/chronos.yaml"
+    n_runs: 1
+
+  - name: "timesfm_hk_hfmd"
+    config: "../baselines/hk_hfmd/timesfm.yaml"
+    n_runs: 1
+
+  - name: "moirai_hk_hfmd"
+    config: "../baselines/hk_hfmd/moirai.yaml"
+    n_runs: 1

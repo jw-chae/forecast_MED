@@ -1,0 +1,19 @@
+[
+  {
+    "disease_name_zh": "手足口病",
+    "disease_name_en": "Hand, Foot, and Mouth Disease (HFMD)",
+    "seasonality": "Spring/Summer (April-July peak)",
+    "incubation_period_days_min": 3,
+    "incubation_period_days_max": 6,
+    "primary_age_group": "Infants and children under 5 years",
+    "transmission_mode": [
+      "Fecal-oral route",
+      "Contact with blister fluid or nose/throat secretions",
+      "Respiratory droplets"
+    ],
+    "source_urls": [
+      "https://www.chinacdc.cn/jkzt/crb/b/szkb/jszl_11815/201804/t20180427_164010.html",
+      "https://www.who.int/westernpacific/health-topics/hand-foot-and-mouth-disease"
+    ]
+  }
+]

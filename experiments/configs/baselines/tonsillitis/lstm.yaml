@@ -1,0 +1,81 @@
+# LSTM baseline for acute tonsillitis
+experiment:
+  name: "lstm_tonsil_baseline"
+  description: "LSTM 기반 급성편도염 예측"
+  tags: ["baseline", "dl", "tonsil"]
+  random_seed: 2024
+
+data:
+  source: "processed_data/his_outpatient_weekly_epi_counts.csv"
+  disease: "急性扁桃体炎"
+  train_start: "2021-09-06"
+  train_end: "2024-01-29"
+  test_start: "2024-02-05"
+  test_end: "2024-09-30"
+  validation_split: 0.2
+  rolling:
+    enabled: true
+    step_size: 1
+    min_train_weeks: 104
+    forecast_start: "2024-02-05"
+    forecast_end: "2024-09-30"
+  external_signals:
+    enabled: true
+    source: "processed_data/final_unified_dataset.json"
+    features:
+      - "temperature"
+      - "humidity"
+      - "mobility"
+
+model:
+  type: "lstm"
+  params:
+    input_window: 16
+    hidden_size: 64
+    num_layers: 2
+    dropout: 0.2
+    learning_rate: 0.001
+    batch_size: 32
+    epochs: 100
+    scheduler: "ReduceLROnPlateau"
+  forecast:
+    horizon: 1
+    quantiles: [0.025, 0.05, 0.1, 0.5, 0.9, 0.95, 0.975]
+    teacher_forcing: true
+
+evaluation:
+  metrics:
+    - "crps"
+    - "mae"
+    - "rmse"
+    - "mape"
+    - "coverage_95"
+    - "coverage_80"
+    - "peak_recall_2w"
+    - "peak_mae"
+  statistical_test:
+    enabled: true
+    method: "wilcoxon"
+    alpha: 0.05
+
+logging:
+  level: "INFO"
+  console: true
+  file: true
+  checkpoint:
+    enabled: true
+    frequency: 5
+  visualization:
+    enabled: true
+    save_plots: true
+    plot_types:
+      - "prediction_vs_actual"
+      - "prediction_bands"
+      - "rolling_metrics"
+      - "loss_curve"
+
+resources:
+  n_jobs: 4
+  gpu: true
+  memory_limit: "32GB"
+  timeout: 14400

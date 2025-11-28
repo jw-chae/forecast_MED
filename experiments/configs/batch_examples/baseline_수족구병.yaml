@@ -1,0 +1,48 @@
+batch:
+  name: "baseline_수족구병"
+  default_batch_name: "baseline_수족구병"
+  summary_dir: "experiments/results/batch_runs"
+  stop_on_error: false
+
+global_overrides:
+  - "logging.console=true"
+
+experiments:
+  - name: "prophet_hfmd"
+    config: "../baselines/hand_foot_mouth/prophet.yaml"
+    n_runs: 1
+    seeds: [42]
+
+  - name: "seir_hfmd"
+    config: "../main/hand_foot_mouth/seir_baseline.yaml"
+    n_runs: 1
+    overrides:
+      - "model.params.population=1200000"
+
+  - name: "xgboost_hfmd"
+    config: "../baselines/hand_foot_mouth/xgboost.yaml"
+    n_runs: 1
+
+  - name: "arima_hfmd"
+    config: "../baselines/hand_foot_mouth/arima.yaml"
+    n_runs: 1
+
+  - name: "lstm_hfmd"
+    config: "../baselines/hand_foot_mouth/lstm.yaml"
+    n_runs: 1
+
+  - name: "chronos_v1_hfmd"
+    config: "../main/hand_foot_mouth/chronos_v1_baseline.yaml"
+    n_runs: 1
+
+  - name: "chronos_v2_hfmd"
+    config: "../main/hand_foot_mouth/chronos_baseline.yaml"
+    n_runs: 1
+
+  - name: "timesfm_hfmd"
+    config: "../main/hand_foot_mouth/timesfm_baseline.yaml"
+    n_runs: 1
+
+  - name: "moirai_hfmd"
+    config: "../main/hand_foot_mouth/moirai_baseline.yaml"
+    n_runs: 1

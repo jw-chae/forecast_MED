@@ -1,0 +1,49 @@
+# Moirai foundation model baseline for tonsillitis
+experiment:
+  name: "moirai_tonsil_baseline"
+  description: "Salesforce Moirai 기반 편도염(tonsillitis) 주간 예측 베이스라인"
+  tags: ["moirai", "foundation_model", "tonsillitis"]
+  random_seed: 42
+
+data:
+  source: "processed_data/his_outpatient_weekly_epi_counts.csv"
+  disease: "急性扁桃体炎"
+  train_start: "2021-09-06"
+  train_end: "2024-01-29"
+  test_start: "2024-02-05"
+  test_end: "2024-09-30"
+  rolling:
+    enabled: true
+    step_size: 1
+    min_train_weeks: 52
+    forecast_start: "2024-02-05"
+    forecast_end: "2024-09-30"
+
+model:
+  type: "moirai"
+  repo_id: "Salesforce/moirai-1.0-R-small"
+  context_len: 512
+  quantiles: [0.1, 0.5, 0.9]
+  num_samples: 100
+  patch_size: "auto"
+  batch_size: 32
+  device: "cpu"  # 필요시 "cuda" 로 변경
+  forecast:
+    horizon: 1
+
+evaluation:
+  metrics:
+    - "crps"
+    - "mae"
+    - "mape"
+    - "sharpness"
+
+logging:
+  level: "INFO"
+  console: true
+  file: true
+
+resources:
+  n_jobs: 2
+  gpu: false
+  memory_limit: "24GB"

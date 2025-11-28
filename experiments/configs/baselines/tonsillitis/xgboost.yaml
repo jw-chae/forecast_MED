@@ -1,0 +1,80 @@
+# XGBoost baseline for acute tonsillitis
+experiment:
+  name: "xgboost_tonsil_baseline"
+  description: "XGBoost 회귀 기반 급성편도염 베이스라인"
+  tags: ["baseline", "ml", "tonsil"]
+  random_seed: 123
+
+data:
+  source: "processed_data/his_outpatient_weekly_epi_counts.csv"
+  disease: "急性扁桃体炎"
+  train_start: "2021-09-06"
+  train_end: "2024-01-29"
+  test_start: "2024-02-05"
+  test_end: "2024-09-30"
+  validation_split: 0.1
+  rolling:
+    enabled: true
+    step_size: 1
+    min_train_weeks: 78
+    forecast_start: "2024-02-05"
+    forecast_end: "2024-09-30"
+  external_signals:
+    enabled: true
+    source: "processed_data/events_calendar.json"
+    features:
+      - "is_holiday"
+      - "mean_temperature"
+      - "search_trend"
+
+model:
+  type: "xgboost"
+  params:
+    max_depth: 6
+    learning_rate: 0.05
+    n_estimators: 500
+    subsample: 0.8
+    colsample_bytree: 0.8
+    objective: "reg:squarederror"
+  forecast:
+    horizon: 1
+    quantiles: [0.025, 0.05, 0.1, 0.5, 0.9, 0.95, 0.975]
+    feature_lags: [1, 2, 3, 4, 12, 26, 52]
+    rolling_window: 12
+
+evaluation:
+  metrics:
+    - "crps"
+    - "mae"
+    - "rmse"
+    - "mape"
+    - "coverage_90"
+    - "coverage_80"
+    - "peak_recall_2w"
+    - "peak_precision_2w"
+  statistical_test:
+    enabled: true
+    method: "wilcoxon"
+    alpha: 0.05
+
+logging:
+  level: "INFO"
+  console: true
+  file: true
+  checkpoint:
+    enabled: true
+    frequency: 20
+  visualization:
+    enabled: true
+    save_plots: true
+    plot_types:
+      - "prediction_vs_actual"
+      - "feature_importance"
+      - "rolling_metrics"
+      - "residuals"
+
+resources:
+  n_jobs: -1
+  gpu: false
+  memory_limit: "24GB"
+  timeout: 10800

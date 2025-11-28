@@ -1,0 +1,72 @@
+experiment:
+  name: "xgboost_hk_hfmd"
+  description: "XGBoost baseline for HK HFMD"
+  tags: ["baseline", "ml", "hfmd", "hk"]
+  random_seed: 123
+
+data:
+  source: "experiments/data_for_model/手足口病/data_HK/hk_hfmd_baseline_ready.csv"
+  disease: "value"
+  train_start: "2010-01-02"
+  train_end: "2022-12-31"
+  test_start: "2023-01-07"
+  test_end: "2024-10-31"
+  validation_split: 0.1
+  rolling:
+    enabled: true
+    step_size: 1
+    min_train_weeks: 78
+    forecast_start: "2023-01-07"
+    forecast_end: "2024-10-31"
+  external_signals:
+    enabled: false
+
+model:
+  type: "xgboost"
+  params:
+    max_depth: 6
+    learning_rate: 0.05
+    n_estimators: 500
+    subsample: 0.8
+    colsample_bytree: 0.8
+    objective: "reg:squarederror"
+  forecast:
+    horizon: 1
+    quantiles: [0.025, 0.05, 0.1, 0.5, 0.9, 0.95, 0.975]
+    feature_lags: [1, 2, 3, 4, 12, 26, 52]
+    rolling_window: 12
+
+evaluation:
+  metrics:
+    - "crps"
+    - "mae"
+    - "rmse"
+    - "mape"
+    - "coverage_95"
+    - "peak_recall_2w"
+    - "peak_mae"
+  statistical_test:
+    enabled: true
+    method: "paired_t_test"
+    alpha: 0.05
+
+logging:
+  level: "INFO"
+  console: true
+  file: true
+  checkpoint:
+    enabled: true
+    frequency: 12
+  visualization:
+    enabled: true
+    save_plots: true
+    plot_types:
+      - "prediction_vs_actual"
+      - "feature_importance"
+      - "rolling_metrics"
+
+resources:
+  n_jobs: 4
+  gpu: false
+  memory_limit: "16GB"
+  timeout: 5400

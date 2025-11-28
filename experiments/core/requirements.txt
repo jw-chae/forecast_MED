@@ -1,0 +1,14 @@
+numpy>=1.23
+pandas>=1.5
+scipy>=1.10
+torch>=2.0.0
+transformers>=4.38.0
+peft>=0.9.0
+bitsandbytes>=0.42.0
+accelerate>=0.27.0
+meteostat
+tqdm
+selenium>=4.10.0
+webdriver-manager>=4.0.0
+scikit-learn>=1.3
+

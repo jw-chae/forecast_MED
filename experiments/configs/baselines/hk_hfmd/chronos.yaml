@@ -1,0 +1,47 @@
+experiment:
+  name: "chronos_hk_hfmd"
+  description: "Chronos (v1) baseline for HK HFMD"
+  tags: ["chronos", "foundation_model", "hfmd", "hk"]
+  random_seed: 42
+
+data:
+  source: "experiments/data_for_model/手足口病/data_HK/hk_hfmd_baseline_ready.csv"
+  disease: "value"
+  train_start: "2010-01-02"
+  train_end: "2022-12-31"
+  test_start: "2023-01-07"
+  test_end: "2024-10-31"
+  rolling:
+    enabled: true
+    step_size: 1
+    min_train_weeks: 52
+    forecast_start: "2023-01-07"
+    forecast_end: "2024-10-31"
+
+model:
+  type: "chronos"
+  repo_id: "amazon/chronos-t5-tiny"
+  device: "cuda"
+  quantiles: [0.025, 0.05, 0.1, 0.5, 0.9, 0.95, 0.975]
+  forecast:
+    horizon: 1
+    quantiles: [0.025, 0.05, 0.1, 0.5, 0.9, 0.95, 0.975]
+
+evaluation:
+  metrics:
+    - "crps"
+    - "mae"
+    - "mape"
+    - "sharpness"
+    - "coverage_90"
+    - "coverage_95"
+
+logging:
+  level: "INFO"
+  console: true
+  file: true
+
+resources:
+  n_jobs: 2
+  gpu: true
+  memory_limit: "24GB"

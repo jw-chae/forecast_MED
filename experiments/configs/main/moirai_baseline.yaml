@@ -1,0 +1,43 @@
+# Moirai 파운데이션 모델 예측 설정
+experiment:
+  name: "moirai_influenza_baseline"
+  description: "Salesforce Moirai 1.0 (R-small) 기반 인플루엔자 주간 예측"
+  tags: ["moirai", "foundation_model", "main"]
+  random_seed: 42
+
+data:
+  source: "processed_data/his_outpatient_weekly_epi_counts.csv"
+  disease: "influenza"
+  train_start: "2020-01-01"
+  train_end: "2024-06-30"
+  test_start: "2024-07-01"
+  test_end: "2024-12-31"
+  rolling:
+    enabled: false
+
+model:
+  type: "moirai"
+  repo_id: "Salesforce/moirai-1.0-R-small"
+  context_len: 512
+  patch_size: "auto"
+  num_samples: 100
+  batch_size: 16
+  device: "cpu"
+  quantiles: [0.1, 0.5, 0.9]
+
+evaluation:
+  metrics:
+    - "crps"
+    - "mae"
+    - "mape"
+    - "sharpness"
+
+logging:
+  level: "INFO"
+  console: true
+  file: true
+
+resources:
+  n_jobs: 2
+  gpu: false
+  memory_limit: "24GB"

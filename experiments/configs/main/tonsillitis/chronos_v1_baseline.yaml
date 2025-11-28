@@ -1,0 +1,45 @@
+# Chronos v1 baseline for tonsillitis
+experiment:
+  name: "chronos_v1_tonsillitis_baseline"
+  description: "Chronos-v1 기반 급성편도체염 주간 예측"
+  tags: ["chronos", "foundation_model", "tonsillitis"]
+  random_seed: 42
+
+data:
+  source: "processed_data/his_outpatient_weekly_epi_counts.csv"
+  disease: "急性扁桃体炎"
+  train_start: "2021-09-06"
+  train_end: "2024-01-29"
+  test_start: "2024-02-05"
+  test_end: "2024-09-30"
+  rolling:
+    enabled: true
+    step_size: 1
+    min_train_weeks: 52
+    forecast_start: "2024-02-05"
+    forecast_end: "2024-09-30"
+
+model:
+  type: "chronos"
+  repo_id: "amazon/chronos-t5-small"
+  device: "cpu"
+  forecast:
+    horizon: 1
+    quantiles: [0.1, 0.5, 0.9]
+
+evaluation:
+  metrics:
+    - "crps"
+    - "mae"
+    - "mape"
+    - "sharpness"
+
+logging:
+  level: "INFO"
+  console: true
+  file: true
+
+resources:
+  n_jobs: 2
+  gpu: false
+  memory_limit: "24GB"

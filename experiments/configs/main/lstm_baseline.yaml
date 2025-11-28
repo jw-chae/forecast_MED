@@ -1,0 +1,79 @@
+# LSTM baseline configuration
+experiment:
+  name: "lstm_baseline"
+  description: "LSTM 기반 딥러닝 베이스라인"
+  tags: ["baseline", "dl"]
+  random_seed: 2024
+
+data:
+  source: "processed_data/his_outpatient_weekly_epi_counts.csv"
+  disease: "influenza"
+  train_start: "2018-01-01"
+  train_end: "2024-06-30"
+  test_start: "2024-07-01"
+  test_end: "2024-12-31"
+  validation_split: 0.2
+  rolling:
+    enabled: true
+    step_size: 1
+    min_train_weeks: 104
+  external_signals:
+    enabled: true
+    source: "processed_data/final_unified_dataset.json"
+    features:
+      - "temperature"
+      - "humidity"
+      - "mobility"
+
+model:
+  type: "lstm"
+  params:
+    input_window: 16
+    hidden_size: 64
+    num_layers: 2
+    dropout: 0.2
+    learning_rate: 0.001
+    batch_size: 32
+    epochs: 100
+    scheduler: "ReduceLROnPlateau"
+  forecast:
+    horizon: 8
+    quantiles: [0.025, 0.05, 0.1, 0.5, 0.9, 0.95, 0.975]
+    teacher_forcing: true
+
+evaluation:
+  metrics:
+    - "crps"
+    - "mae"
+    - "rmse"
+    - "mape"
+    - "coverage_95"
+    - "coverage_80"
+    - "peak_recall_2w"
+    - "peak_mae"
+  statistical_test:
+    enabled: true
+    method: "wilcoxon"
+    alpha: 0.05
+
+logging:
+  level: "INFO"
+  console: true
+  file: true
+  checkpoint:
+    enabled: true
+    frequency: 5
+  visualization:
+    enabled: true
+    save_plots: true
+    plot_types:
+      - "prediction_vs_actual"
+      - "prediction_bands"
+      - "rolling_metrics"
+      - "loss_curve"
+
+resources:
+  n_jobs: 4
+  gpu: true
+  memory_limit: "32GB"
+  timeout: 14400

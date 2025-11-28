@@ -1,0 +1,106 @@
+# Full Med-DeepSeek Epi Tools configuration
+experiment:
+  name: "epi_tools_with_llm_evt"
+  description: "Full pipeline with LLM tuning + EVT"
+  tags: ["main", "llm", "evt"]
+  random_seed: 42
+
+data:
+  source: "processed_data/his_outpatient_weekly_epi_counts.csv"
+  disease: "influenza"
+  train_start: "2020-01-01"
+  train_end: "2024-06-30"
+  test_start: "2024-07-01"
+  test_end: "2024-12-31"
+  rolling:
+    enabled: true
+    step_size: 1
+    min_train_weeks: 52
+  external_signals:
+    enabled: true
+    source: "reports/evidence/gov_reports/monthly_stats_2019-01_to_2025-07.csv"
+    decay_rate: 0.1
+
+model:
+  type: "epi_tools"
+  llm:
+    enabled: true
+    provider: "openai"
+    model: "gpt-4"
+    temperature: 0.7
+    max_retries: 3
+    timeout: 60
+    fallback:
+      enabled: true
+      conservative_params:
+        amplitude_multiplier: 1.4
+        r_boost_cap: 1.6
+        quality: 0.7
+  scenario_engine:
+    n_paths: 5000
+    pct_threshold: 0.12
+    relax_drop: 0.05
+    use_delta_quantile: true
+    delta_quantile: 0.05
+  evt:
+    enabled: true
+    pot_quantile: 0.9
+    shape_bounds: [-0.5, 0.5]
+  param_bounds:
+    amplitude_multiplier: [1.0, 2.5]
+    r_boost_cap: [1.2, 3.0]
+    scale_cap: [1.2, 2.0]
+    x_cap_multiplier: [1.5, 2.5]
+    quality: [0.5, 0.95]
+    nb_dispersion_k: [4, 15]
+    gamma: [0.3, 1.0]
+  forecast:
+    horizon: 4
+    quantiles: [0.025, 0.05, 0.1, 0.5, 0.9, 0.95, 0.975]
+    chain_mode:
+      enabled: false
+      chain_length: 12
+
+evaluation:
+  metrics:
+    - "crps"
+    - "mae"
+    - "mape"
+    - "coverage_95"
+    - "coverage_90"
+    - "peak_recall_2w"
+    - "peak_mae"
+    - "sharpness"
+  statistical_test:
+    enabled: true
+    method: "wilcoxon"
+    alpha: 0.05
+  compare_with:
+    - "prophet_baseline"
+    - "xgboost_baseline"
+
+logging:
+  level: "INFO"
+  console: true
+  file: true
+  checkpoint:
+    enabled: true
+    frequency: 5
+  llm_logs:
+    save_raw_responses: true
+    save_prompts: true
+  visualization:
+    enabled: true
+    save_plots: true
+    plot_types:
+      - "prediction_vs_actual"
+      - "prediction_bands"
+      - "rolling_metrics"
+      - "parameter_evolution"
+      - "llm_decisions"
+
+resources:
+  n_jobs: 4
+  gpu: false
+  memory_limit: "32GB"
+  timeout: 14400

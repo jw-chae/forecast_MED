@@ -1,0 +1,49 @@
+# Chronos 파운데이션 모델 예측 설정
+experiment:
+  name: "chronos_influenza_baseline"
+  description: "Chronos-2 기반 인플루엔자 주간 예측"
+  tags: ["chronos2", "foundation_model", "main"]
+  random_seed: 42
+
+data:
+  source: "processed_data/his_outpatient_weekly_epi_counts.csv"
+  disease:
+    - "hand_foot_mouth"
+    - "急性扁桃体炎"
+  train_start: "2021-09-06"
+  train_end: "2024-01-29"
+  test_start: "2024-02-05"
+  test_end: "2024-09-30"
+  rolling:
+    enabled: true
+    step_size: 1
+    min_train_weeks: 52
+    forecast_start: "2024-02-05"
+    forecast_end: "2024-09-30"
+
+model:
+  type: "chronos2"
+  repo_id: "amazon/chronos-2"
+  device: "cpu"
+  # Chronos-2는 제로샷 파운데이션 모델이므로 별도 학습 파라미터는 최소화
+  item_id: "hfmd_tonsillitis"
+  forecast:
+    horizon: 8
+    quantiles: [0.1, 0.5, 0.9]
+
+evaluation:
+  metrics:
+    - "crps"
+    - "mae"
+    - "mape"
+    - "sharpness"
+
+logging:
+  level: "INFO"
+  console: true
+  file: true
+
+resources:
+  n_jobs: 2
+  gpu: false
+  memory_limit: "24GB"

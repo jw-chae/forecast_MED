@@ -1,0 +1,69 @@
+# Prophet baseline configuration
+experiment:
+  name: "prophet_baseline"
+  description: "Prophet 모델 베이스라인"
+  tags: ["baseline", "statistical"]
+  random_seed: 42
+
+data:
+  source: "processed_data/his_outpatient_weekly_epi_counts.csv"
+  disease: "influenza"
+  train_start: "2020-01-01"
+  train_end: "2024-06-30"
+  test_start: "2024-07-01"
+  test_end: "2024-12-31"
+  validation_split: 0.15
+  rolling:
+    enabled: true
+    step_size: 1
+    min_train_weeks: 52
+  external_signals:
+    enabled: false
+
+model:
+  type: "prophet"
+  params:
+    seasonality_mode: "multiplicative"
+    yearly_seasonality: true
+    weekly_seasonality: false
+    changepoint_prior_scale: 0.05
+    seasonality_prior_scale: 10.0
+  forecast:
+    horizon: 4
+    quantiles: [0.025, 0.05, 0.1, 0.5, 0.9, 0.95, 0.975]
+
+evaluation:
+  metrics:
+    - "crps"
+    - "mae"
+    - "mape"
+    - "coverage_95"
+    - "coverage_90"
+    - "peak_recall_2w"
+    - "peak_mae"
+  statistical_test:
+    enabled: true
+    method: "wilcoxon"
+    alpha: 0.05
+
+logging:
+  level: "INFO"
+  console: true
+  file: true
+  checkpoint:
+    enabled: true
+    frequency: 10
+  visualization:
+    enabled: true
+    save_plots: true
+    plot_types:
+      - "prediction_vs_actual"
+      - "residuals"
+      - "coverage_calibration"
+      - "rolling_metrics"
+
+resources:
+  n_jobs: -1
+  gpu: false
+  memory_limit: "16GB"
+  timeout: 7200

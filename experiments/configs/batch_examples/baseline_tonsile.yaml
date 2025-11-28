@@ -1,0 +1,45 @@
+batch:
+  name: "baseline_tonsile"
+  default_batch_name: "baseline_tonsile"
+  summary_dir: "experiments/results/batch_runs"
+  stop_on_error: false
+
+global_overrides:
+  - "logging.console=true"
+
+experiments:
+  - name: "prophet_tonsil"
+    config: "../baselines/tonsillitis/prophet.yaml"
+    n_runs: 1
+    seeds: [42]
+
+  - name: "seir_tonsil"
+    config: "../main/tonsillitis/seir_baseline.yaml"
+    n_runs: 1
+    overrides:
+      - "model.params.population=1200000"
+
+  - name: "xgboost_tonsil"
+    config: "../baselines/tonsillitis/xgboost.yaml"
+    n_runs: 1
+
+  - name: "arima_tonsil"
+    config: "../baselines/tonsillitis/arima.yaml"
+    n_runs: 1
+
+  - name: "lstm_tonsil"
+    config: "../baselines/tonsillitis/lstm.yaml"
+    n_runs: 1
+
+  - name: "chronos_tonsil"
+    config: "../main/tonsillitis/chronos_baseline.yaml"
+    n_runs: 1
+
+  - name: "timesfm_tonsil"
+    config: "../main/tonsillitis/timesfm_baseline.yaml"
+    n_runs: 1
+
+  - name: "moirai_tonsil"
+    config: "../main/tonsillitis/moirai_baseline.yaml"
+    n_runs: 1
+

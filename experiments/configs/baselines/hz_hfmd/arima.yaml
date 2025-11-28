@@ -1,0 +1,70 @@
+experiment:
+  name: "arima_hz_hfmd"
+  description: "ARIMA baseline for HZ HFMD (1-week horizon)"
+  tags: ["baseline", "statistical", "hfmd", "hz"]
+  random_seed: 42
+
+data:
+  source: "processed_data/his_outpatient_weekly_epi_counts.csv"
+  disease: "手足口病"
+  train_start: "2021-09-06"
+  train_end: "2024-01-29"
+  test_start: "2024-02-01"
+  test_end: "2024-09-30"
+  validation_split: 0.2
+  rolling:
+    enabled: true
+    step_size: 1
+    min_train_weeks: 52
+    forecast_start: "2024-02-01"
+    forecast_end: "2024-09-30"
+  external_signals:
+    enabled: false
+
+model:
+  type: "arima"
+  params:
+    order: [2, 1, 2]
+    seasonal_order: [1, 0, 1, 52]
+    enforce_stationarity: false
+    enforce_invertibility: false
+  forecast:
+    horizon: 1
+    quantiles: [0.025, 0.05, 0.1, 0.5, 0.9, 0.95, 0.975]
+
+evaluation:
+  metrics:
+    - "crps"
+    - "mae"
+    - "rmse"
+    - "coverage_95"
+    - "coverage_90"
+    - "coverage_80"
+    - "peak_recall_2w"
+    - "peak_mae"
+  statistical_test:
+    enabled: true
+    method: "paired_t_test"
+    alpha: 0.05
+
+logging:
+  level: "INFO"
+  console: true
+  file: true
+  checkpoint:
+    enabled: true
+    frequency: 12
+  visualization:
+    enabled: true
+    save_plots: true
+    plot_types:
+      - "prediction_vs_actual"
+      - "residuals"
+      - "diagnostics_acf"
+      - "rolling_metrics"
+
+resources:
+  n_jobs: 1
+  gpu: false
+  memory_limit: "12GB"
+  timeout: 5400

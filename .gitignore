@@ -1,6 +1,7 @@
 # Environments
 .env
 .env.*
+!.env.example
 
 # Python
 __pycache__/
@@ -11,6 +12,7 @@ __pycache__/
 
 # Reports & Logs
 reports/
+logs/
 *.log
 
 # IDE
@@ -21,7 +23,6 @@ reports/
 llama.cpp/
 models_gguf_single/
 models_gguf/
-models/
 
 # Cache directories
 .cache/
@@ -31,16 +32,21 @@ __pycache__/
 # Embedded git repositories
 scripts/Qwen-Agent TCM/
 
-# Large data files (exceed GitHub's 100MB limit)
-processed_data/final_unified_dataset.json
-processed_data/PACS影像数据 去身份证.json
-processed_data/microbio_pivot.csv
-processed_data/unified_dataset.json
-processed_data/LIS 去除身份证.json
+# Exclude data and results (not uploading to GitHub)
+experiments/results/
+experiments/results copy/
+experiments/data_for_model/
+data/
+processed_data/
+test_data/
+test_results/
+results_json/
+visualizations/
 
-# Large data files (exceed GitHub's 50MB limit)
-*.json
-*.csv
+# Backup folders
+experiments copy/
+
+# Large data files
 *.parquet
 *.tsd
 

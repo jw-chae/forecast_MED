@@ -1,0 +1,84 @@
+# SEIR compartmental model baseline configuration
+experiment:
+  name: "seir_baseline"
+  description: "SEIR compartmental model baseline"
+  tags: ["baseline", "epidemiological"]
+  random_seed: 99
+
+data:
+  source: "processed_data/his_outpatient_weekly_epi_counts.csv"
+  disease:
+    - "hand_foot_mouth"
+    - "急性扁桃体炎"
+  train_start: "2021-09-06"
+  train_end: "2024-01-29"
+  test_start: "2024-02-05"
+  test_end: "2024-09-30"
+  validation_split: 0.1
+  rolling:
+    enabled: true
+    step_size: 1
+    min_train_weeks: 64
+    forecast_start: "2024-02-05"
+    forecast_end: "2024-09-30"
+  external_signals:
+    enabled: true
+    source: "processed_data/events_calendar.json"
+    features:
+      - "school_open"
+      - "holiday"
+      - "weather_anomaly"
+
+model:
+  type: "seir"
+  params:
+    population: 1000000
+    beta: 0.35
+    sigma: 0.15
+    gamma: 0.1
+    initial_exposed: 100
+    initial_infectious: 50
+    interventions:
+      enabled: true
+      effect_delay_weeks: 1
+      compliance_rate: 0.6
+  forecast:
+    horizon: 12
+    quantiles: [0.025, 0.05, 0.1, 0.5, 0.9, 0.95, 0.975]
+
+
+
+evaluation:
+  metrics:
+    - "crps"
+    - "mae"
+    - "rmse"
+    - "coverage_90"
+    - "coverage_80"
+    - "peak_recall_2w"
+    - "peak_precision_2w"
+  statistical_test:
+    enabled: true
+    method: "wilcoxon"
+    alpha: 0.05
+
+logging:
+  level: "INFO"
+  console: true
+  file: true
+  checkpoint:
+    enabled: true
+    frequency: 8
+  visualization:
+    enabled: true
+    save_plots: true
+    plot_types:
+      - "prediction_vs_actual"
+      - "compartment_trajectories"
+      - "rolling_metrics"
+
+resources:
+  n_jobs: 2
+  gpu: false
+  memory_limit: "16GB"
+  timeout: 7200

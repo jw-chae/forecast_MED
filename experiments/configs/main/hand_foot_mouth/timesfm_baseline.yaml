@@ -1,0 +1,53 @@
+# TimesFM baseline for hand-foot-mouth disease
+experiment:
+  name: "timesfm_hfmd_baseline"
+  description: "TimesFM 200M 모델을 이용한 HFMD 예측"
+  tags: ["timesfm", "foundation_model", "hfmd"]
+  random_seed: 42
+
+data:
+  source: "processed_data/his_outpatient_weekly_epi_counts.csv"
+  disease: "hand_foot_mouth"
+  train_start: "2021-09-06"
+  train_end: "2024-01-29"
+  test_start: "2024-02-05"
+  test_end: "2024-09-30"
+  rolling:
+    enabled: true
+    step_size: 1
+    min_train_weeks: 52
+    forecast_start: "2024-02-05"
+    forecast_end: "2024-09-30"
+
+model:
+  type: "timesfm"
+  repo_id: "google/timesfm-1.0-200m-pytorch"
+  context_len: 512
+  horizon_len: 52
+  input_patch_len: 32
+  output_patch_len: 128
+  backend: "cpu"
+  normalize: true
+  quantiles: [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
+  point_forecast_mode: "median"
+  forecast:
+    horizon: 1
+
+evaluation:
+  metrics:
+    - "crps"
+    - "mae"
+    - "mape"
+    - "coverage_90"
+    - "coverage_95"
+    - "sharpness"
+
+logging:
+  level: "INFO"
+  console: true
+  file: true
+
+resources:
+  n_jobs: 2
+  gpu: false
+  memory_limit: "24GB"
